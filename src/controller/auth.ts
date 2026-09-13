@@ -1,90 +1,129 @@
-const User = require('../models/user');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import User from '../models/user';
 
+/**
+ * POST /api/auth/signup
+ *
+ * Registers a new user with hashed password.
+ */
+export const register = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, email, password } = req.body;
 
-
-const register = async (req, res,next) => {
-    try {
-      const { username, email, password } = req.body;
-  
-      const userExist = await User.findOne({ email });
-      if (userExist) {
-        return res.status(400).json({
-          status: 'failed',
-          message: 'Email already exists in the database',
-        });
-      }
-  
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      const newUser = await User.create({
-        username,
-        email,
-        password: hashedPassword,
+    if (!username || !email || !password) {
+      res.status(400).json({
+        status: 'failed',
+        message: 'Please provide username, email, and password',
       });
-  
-    //  res.redirect("/api/auth/login");
-      res.status(201).json({
-        status: 'success',
-        data: newUser,
-      });
-
-
-    } catch (err) {
-    return res.status(500).json({
-    message: err.message,
-    });
-      //  next(err)
+      return;
     }
-  }
 
-const login = async (req, res) => {
+    if (password.length < 6) {
+      res.status(400).json({
+        status: 'failed',
+        message: 'Password must be at least 6 characters',
+      });
+      return;
+    }
+
+    const userExist = await User.findOne({ email: email.toLowerCase() });
+    if (userExist) {
+      res.status(409).json({
+        status: 'failed',
+        message: 'Email already exists',
+      });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      username,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        plan: newUser.plan,
+      },
+    });
+  } catch (err: any) {
+    console.error('Registration error:', err);
+    res.status(500).json({
+      status: 'failed',
+      message: err.message || 'Internal Server Error',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/login
+ *
+ * Authenticates a user and returns a JWT token.
+ */
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
+      res.status(400).json({
         message: 'Please provide email and password',
       });
+      return;
     }
 
-    // Check if the user exists in the database
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return res.status(401).json({
+      res.status(401).json({
         message: 'Invalid credentials',
       });
+      return;
     }
 
-    // Compare the provided password with the stored password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({
+      res.status(401).json({
         message: 'Invalid credentials',
       });
+      return;
     }
 
-    const token = jwt.sign({ id: user.id, email:user.email, password:password.email }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
-//res.redirect("/api/url/shorten")
-    return res.status(200).json({
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET is not configured');
+      res.status(500).json({ message: 'Server configuration error' });
+      return;
+    }
+
+    // Secure payload — no password or sensitive data
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      jwtSecret,
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({
       message: 'Login successful',
       token,
-      
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        plan: user.plan,
+      },
     });
-
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-      status: "failed"
+  } catch (error: any) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      status: 'failed',
+      message: error.message || 'Internal Server Error',
     });
-
   }
-};
-
-module.exports = {
-  register,
-  login,
 };

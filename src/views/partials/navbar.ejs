@@ -1,0 +1,24 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-link"></i>
+      </div>
+      <span class="brand-text">SHO<span class="brand-accent">.RTLY</span></span>
+    </a>
+
+    <div class="nav-links" id="navLinks">
+      <a href="/api/url/shorten" class="nav-item"><i class="fa-solid fa-bolt"></i> Shorten</a>
+      <div id="guestNav" class="nav-group">
+        <a href="/api/auth/login" class="nav-item"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        <a href="/api/auth/signup" class="btn btn-primary btn-sm"><i class="fa-solid fa-user-plus"></i> Sign Up</a>
+      </div>
+      <div id="userNav" class="nav-group hidden">
+        <a href="/api/auth/dashboard" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a href="/api/auth/history" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> My Links</a>
+        <span class="user-greeting" id="userGreeting"></span>
+        <button id="logoutBtn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>

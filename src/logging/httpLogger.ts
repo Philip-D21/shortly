@@ -1,37 +1,14 @@
-import morgan from "morgan";
-const json = require("morgan-json");
-const logger = require("./logger");
+import morgan from 'morgan';
+import logger from './logger';
 
-
-const format = json({
-    method: ":method",
-    url: "url",
-    status: ":status",
-    contentLength: ":res[content-length]",
-    responseTime: ":response-time",
-})
+const format = ':method :url :status :res[content-length] - :response-time ms';
 
 export const httpLogger = morgan(format, {
-    stream:{
-        write: (message)=>{
-            const {
-                method,
-                url,
-                status,
-                contentLength,
-                responseTime
-            } = JSON.parse(message)
+  stream: {
+    write: (message: string) => {
+      logger.info(message.trim());
+    },
+  },
+});
 
-            logger.info("HTTP Access Log",
-            {
-                timestamp: new Date().toString(),
-                method,
-                url,
-                status: Number(status),
-                contentLength,
-                responseTime: Number(responseTime)
-             })
-            }
-        }
-})
-
+export default httpLogger;

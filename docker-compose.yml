@@ -1,17 +1,61 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  ts-node-docker:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base
-    volumes:
-      - ./src:/home/node/app/src
-      - ./nodemon.json:/home/node/app/nodemon.json
-    container_name: ts-node-docker
-    expose:
-      - '4000'
+    container_name: shortly_app
     ports:
-      - '4000:4000'
-    command: npm run dev
+      - '4400:4400'
+    environment:
+      - PORT=4400
+      - BASE_URL=http://localhost:4400
+      - MONGO_URI=mongodb://mongodb:27017/urlshortener
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - ANALYTICS_SALT=${ANALYTICS_SALT:?ANALYTICS_SALT is required}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY:-}
+      - PAYSTACK_PRO_PLAN_CODE=${PAYSTACK_PRO_PLAN_CODE:-}
+      - PAYSTACK_PRO_AMOUNT=${PAYSTACK_PRO_AMOUNT:-800000}
+      - PAYSTACK_BUSINESS_PLAN_CODE=${PAYSTACK_BUSINESS_PLAN_CODE:-}
+      - PAYSTACK_BUSINESS_AMOUNT=${PAYSTACK_BUSINESS_AMOUNT:-2500000}
+      - NODE_ENV=development
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: always
+
+  mongodb:
+    image: mongo:7.0
+    container_name: shortly_mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: shortly_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    restart: always
+
+volumes:
+  mongo_data:
+  redis_data:

@@ -1,21 +1,27 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IClick extends Document {
+  urlId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  visitorHash?: string;
+  referrer?: string;
+  userAgent?: string;
+}
 
-export const Clicks = new mongoose.Schema({
+const clickSchema = new Schema<IClick>({
   urlId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'URL',
-
+    ref: 'Url',
+    required: true,
   },
- createdAt: {
+  createdAt: {
     type: Date,
-    default: Date.now(),
-    
+    default: Date.now,
   },
-  ipAddress: {
-    type: String,
-  },
+  visitorHash: { type: String, index: true },
+  referrer: { type: String, maxlength: 2048 },
+  userAgent: { type: String, maxlength: 1024 },
 });
 
-
-// module.exports = mongoose.model('Click', clickSchema);
+const Click = mongoose.model<IClick>('Click', clickSchema);
+export default Click;

@@ -1,38 +1,55 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IUrl extends Document {
+  shortUrl: string;
+  longUrl: string;
+  shortId: string;
+  clicks: number;
+  userId: mongoose.Types.ObjectId | null;
+  customUrl: string | null;
+  qrCodeDataUrl: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export const Url = new mongoose.Schema({
-  shortUrl: {
-    type: String,
-    required: [true, "Please provide short Url"]
+const urlSchema = new Schema<IUrl>(
+  {
+    shortUrl: {
+      type: String,
+      required: [true, 'Please provide short Url'],
+    },
+    longUrl: {
+      type: String,
+      required: [true, 'Please provide long url'],
+    },
+    shortId: {
+      type: String,
+      required: [true, 'Please provide the short id'],
+      unique: true,
+      index: true,
+    },
+    clicks: {
+      type: Number,
+      default: 0,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    customUrl: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: null,
+    },
+    qrCodeDataUrl: {
+      type: String,
+      default: null,
+    },
   },
-  longUrl: {
-    type: String,
-    required: [true,"Please provide long url"] 
-  },
-  
-  shortId:{
-     type: String,
-     required: [true, 'Please provide the short id']
-  },
-  clicks:{
-    type: Number,
-    default: 0,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  }, 
-  customUrl: {
-    type: String,
-    unique: true,
-  },
-},
-
+  { timestamps: true }
 );
 
-
-
-
-
-// module.exports = mongoose.model('Url', urlSchema);
+const Url = mongoose.model<IUrl>('Url', urlSchema);
+export default Url;

@@ -1,29 +1,84 @@
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const User = require("../models/user");
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 
+interface JwtPayload {
+  id: string;
+  email: string;
+}
 
-const authenticate = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
+/**
+ * Requires a valid JWT token. Rejects unauthenticated requests.
+ */
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = extractToken(req);
 
   if (!token) {
-    return res.status(401).json({ message: "Please provide a JWT token" });
+    res.status(401).json({ message: 'Authentication required' });
+    return;
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      return res.status(401).json({ message: "Token has expired" });
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      res.status(500).json({ message: 'Server configuration error' });
+      return;
     }
-    return res.status(401).json({ message: "Invalid token" });
+
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    (req as any).user = decoded;
+    next();
+  } catch (err: any) {
+    if (err.name === 'TokenExpiredError') {
+      res.status(401).json({ message: 'Token has expired' });
+      return;
+    }
+    res.status(401).json({ message: 'Invalid token' });
   }
 };
 
+/**
+ * Attaches user info if a valid JWT is present, but does NOT reject
+ * unauthenticated requests. Enables guest-mode functionality.
+ */
+export const optionalAuth = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = extractToken(req);
 
+  if (!token) {
+    next();
+    return;
+  }
 
-module.exports = {
-  authenticate,
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      next();
+      return;
+    }
+
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    (req as any).user = decoded;
+  } catch {
+    // Token is invalid or expired — proceed as guest
+  }
+
+  next();
 };
+
+/**
+ * Extracts the Bearer token from the Authorization header.
+ */
+function extractToken(req: Request): string | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null;
+  }
+  return authHeader.split(' ')[1] || null;
+}

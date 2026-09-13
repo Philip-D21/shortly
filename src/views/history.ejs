@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head', { title: 'My Link History & Analytics' }) %>
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main class="main-wrapper">
+    <div class="history-header">
+      <div>
+        <h2><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> My Shortened Links</h2>
+        <p style="color: var(--text-muted);">View click analytics and download QR codes for all your shortened links.</p>
+      </div>
+      <a href="/api/url/shorten" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Shorten New URL</a>
+    </div>
+
+    <div id="historyContainer" class="history-grid">
+      <!-- Loaded dynamically via app.js -->
+      <div style="text-align: center; padding: 3rem;">
+        <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+        <p style="color: var(--text-muted); margin-top: 1rem;">Loading your links...</p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="/app.js"></script>
+</body>
+</html>

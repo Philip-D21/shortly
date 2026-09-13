@@ -1,100 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing page</title>
-    <!-- CSS only -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-
-    <style>
-        .background-radial-gradient {
-            background-color: hsl(218, 41%, 15%);
-            background-image: radial-gradient(650px circle at 0% 0%, hsl(218, 41%, 35%) 15%, hsl(218, 41%, 30%) 35%, hsl(218, 41%, 20%) 75%, hsl(218, 41%, 19%) 80%, transparent 100%), radial-gradient(1250px circle at 100% 100%, hsl(218, 41%, 45%) 15%, hsl(218, 41%, 30%) 35%, hsl(218, 41%, 20%) 75%, hsl(218, 41%, 19%) 80%, transparent 100%);
-        }
-
-        #radius-shape-1 {
-            height: 220px;
-            width: 220px;
-            top: -60px;
-            left: -130px;
-            background: radial-gradient(#44006b, #ad1fff);
-            overflow: hidden;
-        }
-
-        #radius-shape-2 {
-            border-radius: 38% 62% 63% 37% / 70% 33% 67% 30%;
-            bottom: -60px;
-            right: -110px;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(#44006b, #ad1fff);
-            overflow: hidden;
-        }
-
-        .bg-glass {
-            background-color: hsla(0, 0%, 100%, 0.9) !important;
-            backdrop-filter: saturate(200%) blur(25px);
-        }
-
-        footer {
-            background-color: hsl(218, 41%, 15%);
-            color: #faf5f5;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        footer a {
-            color: #faf5f5;
-            text-decoration: none;
-            margin-left: 10px;
-        }
-    </style>
+  <%- include('partials/head', { title: 'Fast Modern URL Shortener & QR Code Generator' }) %>
 </head>
-
 <body>
-    <div class="container mt-4">
-        <!-- Section: Design Block -->
-        <section class="background-radial-gradient overflow-hidden">
-            <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
-                <div class="row gx-lg-5 align-items-center mb-5">
-                    <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
-                        <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(218, 81%, 95%)">
-                            Welcome to <br />
-                            <span style="color: hsl(218, 81%, 75%)">SHO.RTLY</span>
-                        </h1>
-                        <p class="mb-4 opacity-70" style="color: hsl(218, 81%, 85%)">
-                            Long URLs can be quite a hassle to share,
-                            But fear not, a solution is here, fair and square.
-                            <span>Sho.rtly</span> has come to the rescue, compact and neat,
-                            Trimming those long links, making sharing a treat.
-                        </p>
-                        <div class="btn-container">
-                            <button onclick="window.location.href='/api/auth/login'">Login</button>
-                            <button onclick="window.location.href='/api/auth/signup'">Signup</button>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-        </section>
+  <%- include('partials/navbar') %>
+
+  <main class="main-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-badge">
+        <i class="fa-solid fa-sparkles" style="color: var(--primary-start);"></i> <span class="brand-accent">Powered by Node.js & MongoDB</span>
+      </div>
+      <h1 class="hero-title"><span class="brand-accent">Shorten URLs.</span><br>Generate Instant QR Codes.</h1>
+      <p class="hero-subtitle">Transform long, clunky URLs into short, trackable links and high-resolution QR codes in milliseconds.</p>
+    </section>
+
+    <!-- Quick URL Shortener Form (Guest Mode Enabled) -->
+    <div class="glass-card url-form-container">
+      <form id="shortenForm">
+        <div class="url-input-grid">
+          <div class="url-input-wrapper">
+            <i class="fa-solid fa-link url-input-icon"></i>
+            <input type="url" id="longUrlInput" class="form-control url-input" placeholder="Paste your long URL here (e.g. https://example.com/very-long-link)..." required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-bolt" style="color: var(--primary-start);"></i> Shorten URL
+          </button>
+        </div>
+
+        <div class="advanced-options-toggle" id="toggleAdvanced">
+          <i class="fa-solid fa-chevron-down"></i> Custom Alias & Advanced Options
+        </div>
+
+        <div class="advanced-panel hidden" id="advancedPanel">
+          <div class="form-group">
+            <label class="form-label">Custom Alias (Optional)</label>
+            <input type="text" id="customAliasInput" class="form-control" placeholder="e.g. my-custom-link">
+            <small style="color: var(--text-dim); margin-top: 0.25rem; display: block;">Leave blank to auto-generate a unique short code.</small>
+          </div>
+        </div>
+      </form>
+
+      <!-- Shorten Result Display Area -->
+      <div id="shortenResult"></div>
     </div>
 
-    <footer>
-        <div class="container">
-            <p>Made with &#x1F496; by Philip Daudu</p>
-            <p>
-                <a href="https://github.com/Philip-D21">GitHub</a> |
-                <a href="https://www.linkedin.com/in/philip-daudu/">LinkedIn</a>
-            </p>
+    <!-- Feature Cards -->
+    <section class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fa-solid fa-bolt-lightning"></i>
         </div>
-    </footer>
+        <h3 class="feature-title brand-accent">Instant Shortening</h3>
+        <p class="feature-desc">Generate sleek short links in one click without any registration required.</p>
+      </div>
 
-    <!-- JavaScript bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-QRIQkSb4Jg+qHYazI2BgEjHy19m/L1XKuxaWBzm4y8+kmhJW1vZlkBRXRRfp6Xfr" crossorigin="anonymous"></script>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fa-solid fa-qrcode"></i>
+        </div>
+        <h3 class="feature-title brand-accent">High-Res QR Codes</h3>
+        <p class="feature-desc">Every shortened URL automatically generates a downloadable PNG QR code ready for print or digital sharing.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h3 class="feature-title brand-accent">Click Analytics</h3>
+        <p class="feature-desc">Create a free account to track click counts, timestamps, and visitor analytics on all your short links.</p>
+      </div>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="/app.js"></script>
 </body>
-
 </html>

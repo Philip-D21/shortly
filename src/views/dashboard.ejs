@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head', { title: 'User Analytics Dashboard' }) %>
+  <style>
+    .dashboard-header {
+      margin-bottom: 2rem;
+    }
+
+    .profile-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .avatar-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 800;
+      font-family: var(--font-heading);
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .user-details h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .user-details p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(124, 58, 237, 0.4);
+    }
+
+    .metric-icon {
+      font-size: 1.5rem;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .icon-total { background: rgba(124, 58, 237, 0.15); color: var(--primary-start); }
+    .icon-active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .icon-inactive { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .icon-clicks { background: rgba(6, 182, 212, 0.15); color: var(--primary-end); }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-heading);
+      line-height: 1;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .chart-container-card {
+      margin-bottom: 2rem;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 320px;
+      width: 100%;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+
+    .status-active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-inactive {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main class="main-wrapper">
+    <div class="dashboard-header">
+      <h2><i class="fa-solid fa-chart-pie" style="color: var(--primary-start);"></i> Analytics Dashboard</h2>
+      <p style="color: var(--text-muted);">Overview of your profile performance, link activity, and click trends.</p>
+    </div>
+
+    <!-- User Profile Banner -->
+    <div class="glass-card profile-card" id="profileBanner">
+      <div class="profile-info">
+        <div class="avatar-circle" id="profileAvatar">U</div>
+        <div class="user-details">
+          <h2 id="profileUsername">User Profile</h2>
+          <p id="profileEmail">loading@example.com</p>
+          <span id="profileJoined" style="font-size: 0.8rem; color: var(--text-dim);">Member since ...</span>
+        </div>
+      </div>
+      <div>
+        <a href="/api/url/shorten" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-plus"></i> Shorten Link
+        </a>
+      </div>
+    </div>
+
+    <!-- 4 Metric Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon icon-total"><i class="fa-solid fa-link"></i></div>
+        <div class="metric-value" id="valTotalUrls">0</div>
+        <div class="metric-label">Total Shortened URLs</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon icon-active"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="metric-value" id="valActiveUrls">0</div>
+        <div class="metric-label">Active Links</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon icon-inactive"><i class="fa-solid fa-circle-pause"></i></div>
+        <div class="metric-value" id="valInactiveUrls">0</div>
+        <div class="metric-label">Non-Active Links</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon icon-clicks"><i class="fa-solid fa-mouse-pointer"></i></div>
+        <div class="metric-value" id="valTotalClicks">0</div>
+        <div class="metric-label">Total Click Traffic</div>
+      </div>
+    </div>
+
+    <!-- Analytics Chart Card -->
+    <div class="glass-card chart-container-card">
+      <div class="chart-header">
+        <h3><i class="fa-solid fa-chart-line" style="color: var(--primary-end);"></i> Click Performance (Last 7 Days)</h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-solid fa-arrows-rotate"></i> Real-time tracking</span>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="clicksChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent Links Overview Table -->
+    <div class="glass-card">
+      <div class="history-header">
+        <h3><i class="fa-solid fa-list-check" style="color: var(--secondary-start);"></i> Recent Link Overview</h3>
+        <a href="/api/auth/history" style="font-size: 0.9rem; font-weight: 600;">View All Links →</a>
+      </div>
+
+      <div id="recentLinksContainer" class="history-grid">
+        <div style="text-align: center; padding: 2rem;">
+          <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary-start);"></i>
+          <p style="color: var(--text-muted); margin-top: 1rem;">Loading link data...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="/app.js"></script>
+</body>
+</html>

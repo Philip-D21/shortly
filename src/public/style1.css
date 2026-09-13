@@ -18,7 +18,7 @@ body {
 }
 
 .container {
-    background-color: var(--bg-color);
+    background: linear-gradient(to right, white, purple);
     min-height: 100vh;
 }
 
